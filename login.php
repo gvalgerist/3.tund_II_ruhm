@@ -1,5 +1,8 @@
 <?php
 
+	require("../../config.php");
+	
+	
 	//get ja post muutujad
 	//var_dump ($_GET);
 	//echo "<br>";
@@ -8,13 +11,20 @@
 	$signupEmailError= "";
 	$signupPasswordError= "";
 	$reenterpasswordError= "";
-	$genderError= "";
+	
+	
+	$signupemail = "";
+	$signupGender = "";
 	
 	if(isset($_POST["signupemail"])){
 		
 		if(empty($_POST["signupemail"])){
 			
 			$signupEmailError= "See vali on kohustuslik";
+			
+		}else{
+			
+			$signupemail = $_POST["signupemail"];
 			
 		}
 	}
@@ -48,18 +58,62 @@
 		}
 	}
 	
-	//if(isset($_POST["genderm"])){
+	if(isset($_POST["signupGender"])){
 		
-		//if($_POST["genderm"] == $_POST["genderf"]){
+		if(!empty($_POST["signupGender"])){
 			
-			//$genderError= "";
+			$signupGender = $_POST["signupGender"];
 			
-		//}else{
+		}
+		
+	}
+	
+	
+	if(isset($_POST["signupemail"]) &&
+		isset($_POST["signuppassword"]) &&
+		$signupEmailError=="" &&
+		$signupPasswordError==""
+		) {
+		
+		echo "Salvestan... <br>";
+		
+		echo "email: ".$signupemail."<br>";
+		echo "password: ".$_POST["signuppassword"]."<br>";
+		
+		$password = hash("sha512", $_POST["signuppassword"]);
+		
+		echo "password hashed: ".$password."<br>";
+		
+		//echo $serverUsername;
+		
+		$database = "if16_georg";
+		$mysqli = new mysqli($serverHost, $serverUsername, $serverPassword, $database);
+		
+		$stmt = $mysqli->prepare("INSERT INTO user_sample(email, password) VALUES(?, ?)");
+		
+		echo $mysqli->error;
+		
+		$stmt->bind_param("ss", $signupemail, $password);
+		
+		if($stmt->execute()) {
 			
-			//$genderError= "Vali sugu";
+			echo "salvestamine onnestus";
 			
-		//}
-	//}
+		} else {
+			
+			echo "ERROR".$stmt->error;
+		}
+		
+		$stmt->close();
+		$mysqli->close();
+		
+	}
+	
+	
+	
+	
+	
+	
 ?>
 
 <!DOCTYPE html>
@@ -89,7 +143,7 @@
 	
 		<br>
 		<b><label>*E-mail:</label></b><br>
-		<input name="signupemail" placeholder="example@mail.com" type="text"> <?php echo $signupEmailError; ?>
+		<input name="signupemail" placeholder="example@mail.com" type="text" value="<?=$signupemail;?>"> <?php echo $signupEmailError; ?>
 		<br><br>
 	
 		<b><label>*Parool:</label></b><br>
@@ -100,11 +154,26 @@
 		<input name="reenterpassword" placeholder="********" type="password"> <?php echo $reenterpasswordError; ?>
 		<br><br>
 		
-		<b><label>*Sugu:</label></b> <?php echo $genderError; ?><br>
-		<input name="genderm" type="radio"> Mees<br>
-		<input name="genderf" type="radio"> Naine<br>
-		<input name="gendero" type="radio"> Muu
-		<br><br>
+		<b><label>*Sugu:</label></b><br><br>
+		<?php if($signupGender == "male") { ?>
+			<input name="signupGender" type="radio" value="male" checked> Male<br>
+		<?php }else { ?>
+			<input name="signupGender" type="radio" value="male"> Male<br>
+		<?php } ?>
+		
+		<?php if($signupGender == "female") { ?>
+			<input name="signupGender" type="radio" value="female" checked> Female<br>
+		<?php }else { ?>
+			<input name="signupGender" type="radio" value="female"> Female<br>
+		<?php } ?>
+		
+		<?php if($signupGender == "other") { ?>
+			<input name="signupGender" type="radio" value="other" checked> Other<br>
+		<?php }else { ?>
+			<input name="signupGender" type="radio" value="other"> Other<br>
+		<?php } ?>
+		
+		<br>
 		
 		<b><label>*Sunnikuupaev:</label></b><br>
 		<input name="bday" type="date" max="2016-01-01" min="1900-01-01">
